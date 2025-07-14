@@ -241,148 +241,156 @@ function Message() {
   }, [location.state?.userId, loggedInUserId, baseUrl]);
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar />
-      <main className="flex-1 flex flex-col">
-        <div className="flex items-center px-6 py-4 bg-white border-b">
-          <div className="w-10 h-10 rounded-full bg-gray-300 mr-3 flex items-center justify-center text-gray-700 font-semibold">
-            {fistAndLastInitials(location.state.userName) || ""}
-          </div>
-
-          <div>
-            <div className="font-semibold">{location.state.userName}</div>
-            <div className="text-xs text-gray-500">
-              {onlineUsers.has(location.state.userId) ? "Online" : "Offline"}
+    <>
+      <div className="flex flex-col md:flex-row h-screen bg-gray-100">
+        <div className="w-full md:w-64">
+          <Sidebar />
+        </div>
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex items-center px-6 py-4 bg-white border-b">
+            <div className="w-10 h-10 rounded-full bg-gray-300 mr-3 flex items-center justify-center text-gray-700 font-semibold">
+              {fistAndLastInitials(location.state.userName) || ""}
             </div>
-          </div>
-        </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-100">
-          <ul className="space-y-2">
-            {messages.map((msg) => (
-              <li
-                key={msg._id || Math.random()}
-                className={`flex ${
-                  msg.fromSelf ? "justify-end" : "justify-start"
-                }`}
-              >
-                <div
-                  className={`max-w-xs px-4 py-2 rounded-lg shadow ${
-                    msg.fromSelf
-                      ? "bg-green-100 text-right rounded-br-none ml-auto"
-                      : "bg-white text-left rounded-bl-none mr-auto"
-                  }`}
-                >
-                  {msg.attachments &&
-                    (/\.(jpg|jpeg|png|gif)$/i.test(msg.attachments) ? (
-                      <img
-                        src={msg.attachments}
-                        alt=""
-                        className="max-w-full rounded mb-1"
-                      />
-                    ) : (
-                      <video controls className="max-w-full rounded mb-1">
-                        <source src={msg.attachments} />
-                      </video>
-                    ))}
-
-                  {msg.message && <div className="text-sm">{msg.message}</div>}
-
-                  <div className="text-xs text-gray-400 mt-1">
-                    {new Date(msg.createdAt || Date.now()).toLocaleTimeString()}
-                    {msg.fromSelf && (
-                      <span>
-                        {msg.seen ? (
-                          <span className="text-blue-500">✓✓</span>
-                        ) : (
-                          <span className="text-gray-500">✓</span>
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </li>
-            ))}
-            <div ref={messagesEndRef} />
-          </ul>
-        </div>
-
-        <TypingIndicator isTyping={typingStatus} />
-        {/* Attachment preview */}
-        {attachment && (
-          <div className="relative w-full max-w-xs rounded overflow-hidden ">
-            <div className="p-2 bg-white border-t text-sm">
-              <div className="font-medium truncate">{attachment.name}</div>
-              <div className="text-gray-500">
-                {formatFileSize(attachment.size)}
+            <div>
+              <div className="font-semibold">{location.state.userName}</div>
+              <div className="text-xs text-gray-500">
+                {onlineUsers.has(location.state.userId) ? "Online" : "Offline"}
               </div>
             </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-100">
+            <ul className="space-y-2">
+              {messages.map((msg) => (
+                <li
+                  key={msg._id || Math.random()}
+                  className={`flex ${
+                    msg.fromSelf ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  <div
+                    className={`max-w-xs px-4 py-2 rounded-lg shadow ${
+                      msg.fromSelf
+                        ? "bg-green-100 text-right rounded-br-none ml-auto"
+                        : "bg-white text-left rounded-bl-none mr-auto"
+                    }`}
+                  >
+                    {msg.attachments &&
+                      (/\.(jpg|jpeg|png|gif)$/i.test(msg.attachments) ? (
+                        <img
+                          src={msg.attachments}
+                          alt=""
+                          className="max-w-full rounded mb-1"
+                        />
+                      ) : (
+                        <video controls className="max-w-full rounded mb-1">
+                          <source src={msg.attachments} />
+                        </video>
+                      ))}
+
+                    {msg.message && (
+                      <div className="text-sm">{msg.message}</div>
+                    )}
+
+                    <div className="text-xs text-gray-400 mt-1">
+                      {new Date(
+                        msg.createdAt || Date.now()
+                      ).toLocaleTimeString()}
+                      {msg.fromSelf && (
+                        <span>
+                          {msg.seen ? (
+                            <span className="text-blue-500">✓✓</span>
+                          ) : (
+                            <span className="text-gray-500">✓</span>
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </li>
+              ))}
+              <div ref={messagesEndRef} />
+            </ul>
+          </div>
+
+          <TypingIndicator isTyping={typingStatus} />
+          {/* Attachment preview */}
+          {attachment && (
+            <div className="relative w-full max-w-xs rounded overflow-hidden ">
+              <div className="p-2 bg-white border-t text-sm">
+                <div className="font-medium truncate">{attachment.name}</div>
+                <div className="text-gray-500">
+                  {formatFileSize(attachment.size)}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setAttachment(null);
+                  setAttachmentPreview(null);
+                }}
+                className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm hover:bg-white text-red-600 rounded-full p-1.5 shadow"
+                title="Remove"
+              >
+                &times;
+              </button>
+            </div>
+          )}
+
+          <form
+            className="flex items-center px-6 py-4 bg-white border-t space-x-2"
+            onSubmit={handleSend}
+          >
+            {/* Hidden file input */}
+            <input
+              type="file"
+              id="fileInput"
+              onChange={handleAttachmentChange}
+              className="hidden"
+            />
+
+            {/* Icon button to trigger file input */}
             <button
               type="button"
-              onClick={() => {
-                setAttachment(null);
-                setAttachmentPreview(null);
-              }}
-              className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm hover:bg-white text-red-600 rounded-full p-1.5 shadow"
-              title="Remove"
+              onClick={() => document.getElementById("fileInput").click()}
+              className="text-gray-600 hover:text-green-500 p-2"
+              title="Attach file"
             >
-              &times;
+              {/* You can replace this SVG with any icon library */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 12.79V9a7 7 0 00-14 0v6a5 5 0 0010 0V9a3 3 0 00-6 0v5"
+                />
+              </svg>
             </button>
-          </div>
-        )}
 
-        <form
-          className="flex items-center px-6 py-4 bg-white border-t space-x-2"
-          onSubmit={handleSend}
-        >
-          {/* Hidden file input */}
-          <input
-            type="file"
-            id="fileInput"
-            onChange={handleAttachmentChange}
-            className="hidden"
-          />
-
-          {/* Icon button to trigger file input */}
-          <button
-            type="button"
-            onClick={() => document.getElementById("fileInput").click()}
-            className="text-gray-600 hover:text-green-500 p-2"
-            title="Attach file"
-          >
-            {/* You can replace this SVG with any icon library */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+            <input
+              type="text"
+              placeholder="Type a message"
+              className="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring"
+              value={input}
+              onChange={handleInputChange}
+            />
+            <button
+              type="submit"
+              className="px-4 py-2 bg-green-500 text-white rounded-full"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 12.79V9a7 7 0 00-14 0v6a5 5 0 0010 0V9a3 3 0 00-6 0v5"
-              />
-            </svg>
-          </button>
-
-          <input
-            type="text"
-            placeholder="Type a message"
-            className="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring"
-            value={input}
-            onChange={handleInputChange}
-          />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-green-500 text-white rounded-full"
-          >
-            Send
-          </button>
-        </form>
-      </main>
-    </div>
+              Send
+            </button>
+          </form>
+        </main>
+      </div>
+    </>
   );
 }
 
