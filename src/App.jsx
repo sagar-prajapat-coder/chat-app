@@ -5,7 +5,7 @@ import AppRoutes from "./routes/Route";
 
 function App() {
   return (
-    <div className="p-6">
+    <div>
        <BrowserRouter>
         <AppRoutes />
         <ToastContainer position="top-right" autoClose={3000} />
