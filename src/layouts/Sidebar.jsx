@@ -5,8 +5,7 @@ import socket from "../config/Socket";
 import { Search } from "../components/Search";
 import { fistAndLastInitials } from "../utils/helper";
 
-function Sidebar() {
-  const userData = JSON.parse(localStorage.getItem("user"))?.data.name;
+function Sidebar({ user }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -14,25 +13,38 @@ function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   const [activeUserId, setActiveUserId] = useState(null);
+  const [userData, setUserData] = useState("");
+  const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("user"));
+    if (userData) {
+      setUserData(userData);
+    }
+  }, []);
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/");
   };
-
-  const fetchUsers = async () => {
-    try {
-      const res = await Api.get("chat-list");
-      setUsers(res?.data?.data || []);
-    } catch (err) {
-      console.error("API error:", err);
-    }
-  };
-
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (!user?.token) return;
 
+    const fetchUsers = async () => {
+      setLoading(true); // start loader
+      try {
+        const res = await Api.get("chat-list", {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+        setUsers(res?.data?.data || []);
+      } catch (err) {
+        console.error("API error:", err);
+      } finally {
+        setLoading(false); // stop loader
+      }
+    };
+
+    fetchUsers();
+  }, [user?.token]);
   useEffect(() => {
     socket.on("userOnline", (userId) => {
       setOnlineUsers((prev) => new Set(prev).add(userId));
@@ -66,7 +78,11 @@ function Sidebar() {
               strokeWidth={2}
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
             Close
           </>
@@ -79,7 +95,11 @@ function Sidebar() {
               strokeWidth={2}
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             </svg>
           </>
         )}
@@ -112,7 +132,7 @@ function Sidebar() {
                 <path d="M4 20c0-3.314 3.134-6 7-6s7 2.686 7 6" />
               </svg>
             </span>
-            {userData}
+            {userData?.name}
           </div>
           <div
             className="cursor-pointer p-2 rounded hover:bg-gray-100"
