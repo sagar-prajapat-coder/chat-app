@@ -1,9 +1,9 @@
 import { Navigate } from "react-router-dom";
 
 function AuthMiddleware({ children }) {
-  const user = localStorage.getItem("user");
+  const userData = JSON.parse(localStorage.getItem("user"));
 
-  if (!user) {
+  if (!userData?.token) {
     return <Navigate to="/" replace />;
   }
 
