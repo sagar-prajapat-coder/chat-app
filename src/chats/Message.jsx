@@ -9,7 +9,7 @@ import { fistAndLastInitials, formatFileSize } from "../utils/helper.js";
 function Message() {
   const location = useLocation();
   const navigate = useNavigate();
-  const loggedInUserId = JSON.parse(localStorage.getItem("user"))?.data._id;
+  const userData = JSON.parse(localStorage.getItem("user"));
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -29,8 +29,8 @@ function Message() {
   }, [messages]);
 
   useEffect(() => {
-    socket.emit("join", loggedInUserId);
-  }, [loggedInUserId]);
+    socket.emit("join", userData?._id);
+  }, [userData?._id]);
 
   useEffect(() => {
     if (!location.state?.userId) {
@@ -75,7 +75,7 @@ function Message() {
         await Api.post("/messages/seen", { userId: location.state.userId });
         socket.emit("messagesSeen", {
           sender: location.state.userId,
-          receiver: loggedInUserId,
+          receiver: userData?._id,
         });
       }
     } catch (err) {
@@ -91,7 +91,7 @@ function Message() {
       if (!isTyping) {
         setIsTyping(true);
         socket.emit("typing", {
-          sender: loggedInUserId,
+          sender: userData?._id,
           receiver: location.state.userId,
         });
       }
@@ -100,7 +100,7 @@ function Message() {
       typingTimeoutRef.current = setTimeout(() => {
         setIsTyping(false);
         socket.emit("stopTyping", {
-          sender: loggedInUserId,
+          sender: userData?._id,
           receiver: location.state.userId,
         });
       }, 1000);
@@ -108,7 +108,7 @@ function Message() {
       if (isTyping) {
         setIsTyping(false);
         socket.emit("stopTyping", {
-          sender: loggedInUserId,
+          sender: userData?._id,
           receiver: location.state.userId,
         });
       }
@@ -172,11 +172,11 @@ function Message() {
     } catch (err) {
       console.error("Failed to send message", err);
     }
-  };
+  }; 
 
   useEffect(() => {
     const handleReceiveMessage = async (msg) => {
-      if (msg.sender === loggedInUserId) return;
+      if (msg.sender === userData?._id) return;
 
       const normalized = {
         ...msg,
@@ -195,7 +195,7 @@ function Message() {
           await Api.post("/messages/seen", { userId: msg.sender });
           socket.emit("messagesSeen", {
             sender: msg.sender,
-            receiver: loggedInUserId,
+            receiver: userData?._id,
           });
         } catch (err) {
           console.error("Failed to auto-mark as seen", err);
@@ -238,13 +238,13 @@ function Message() {
       socket.off("userOnline");
       socket.off("userOffline");
     };
-  }, [location.state?.userId, loggedInUserId, baseUrl]);
+  }, [location.state?.userId, userData?._id, baseUrl]);
 
   return (
     <>
       <div className="flex flex-col md:flex-row h-screen bg-gray-100">
         <div className="w-full md:w-64">
-          <Sidebar />
+          <Sidebar user={userData} />
         </div>
         <main className="flex-1 flex flex-col overflow-hidden">
           <div className="flex items-center px-6 py-4 bg-white border-b">
@@ -339,7 +339,7 @@ function Message() {
           )}
 
           <form
-            className="flex items-center px-6 py-4 bg-white border-t space-x-2"
+            className="flex items-center px-0 sm:px-6 md:px-6 lg:px-6 py-4 bg-white border-t space-x-2"
             onSubmit={handleSend}
           >
             {/* Hidden file input */}
@@ -377,7 +377,7 @@ function Message() {
             <input
               type="text"
               placeholder="Type a message"
-              className="flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring"
+              className="w-[30%] sm:flex-1 md:flex-1 lg:flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring"
               value={input}
               onChange={handleInputChange}
             />
