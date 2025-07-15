@@ -25,7 +25,7 @@ function Message() {
 
 
   // base URL for attachments
-  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:4001/";
+  const baseUrl = import.meta.env.VITE_API_URL || "";
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
