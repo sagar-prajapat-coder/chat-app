@@ -5,6 +5,7 @@ import Api from "../config/Api";
 import socket from "../config/Socket";
 import { TypingIndicator } from "../components/TypingIndicator";
 import { fistAndLastInitials, formatFileSize } from "../utils/helper.js";
+import { BarLoader, SyncLoader } from "react-spinners";
 
 function Message() {
   const location = useLocation();
@@ -16,10 +17,12 @@ function Message() {
   const [attachment, setAttachment] = useState(null);
   const [attachmentPreview, setAttachmentPreview] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [typingStatus, setTypingStatus] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
+
 
   // base URL for attachments
   const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:4001/";
@@ -32,6 +35,7 @@ function Message() {
     socket.emit("join", userData?._id);
   }, [userData?._id]);
 
+
   useEffect(() => {
     if (!location.state?.userId) {
       navigate("/");
@@ -39,6 +43,7 @@ function Message() {
     }
 
     const fetchMessages = async () => {
+      setLoading(true);
       try {
         const res = await Api.get(`conversation/${location.state.userId}`);
         const normalized = res.data.data.map((msg) => ({
@@ -50,15 +55,12 @@ function Message() {
               ? getAttachmentUrl(msg.attachments)
               : null,
         }));
-        console.log("Fetched messages:", normalized);
-        if (normalized.length > 0) {
-          setMessages(normalized);
-        } else {
-          setMessages([]);
-        }
+        setMessages(normalized.length > 0 ? normalized : []);
         await markMessagesAsSeen();
       } catch (err) {
         console.error("Failed to fetch messages", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -259,60 +261,71 @@ function Message() {
               </div>
             </div>
           </div>
+          {
+            loading ? (
+              <>
+              <div className="flex justify-center items-center h-screen">
+                    <BarLoader color="#22c55e" height={4} width={150} />
+              </div>
+              </>
+            ) : (
+              <>
+                <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-100">
+                  <ul className="space-y-2">
+                    {messages.map((msg) => (
+                      <li
+                        key={msg._id || Math.random()}
+                        className={`flex ${
+                          msg.fromSelf ? "justify-end" : "justify-start"
+                        }`}
+                      >
+                        <div
+                          className={`max-w-xs px-4 py-2 rounded-lg shadow ${
+                            msg.fromSelf
+                              ? "bg-green-100 text-right rounded-br-none ml-auto"
+                              : "bg-white text-left rounded-bl-none mr-auto"
+                          }`}
+                        >
+                          {msg.attachments &&
+                            (/\.(jpg|jpeg|png|gif)$/i.test(msg.attachments) ? (
+                              <img
+                                src={msg.attachments}
+                                alt=""
+                                className="max-w-full rounded mb-1"
+                              />
+                            ) : (
+                              <video controls className="max-w-full rounded mb-1">
+                                <source src={msg.attachments} />
+                              </video>
+                            ))}
 
-          <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-100">
-            <ul className="space-y-2">
-              {messages.map((msg) => (
-                <li
-                  key={msg._id || Math.random()}
-                  className={`flex ${
-                    msg.fromSelf ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div
-                    className={`max-w-xs px-4 py-2 rounded-lg shadow ${
-                      msg.fromSelf
-                        ? "bg-green-100 text-right rounded-br-none ml-auto"
-                        : "bg-white text-left rounded-bl-none mr-auto"
-                    }`}
-                  >
-                    {msg.attachments &&
-                      (/\.(jpg|jpeg|png|gif)$/i.test(msg.attachments) ? (
-                        <img
-                          src={msg.attachments}
-                          alt=""
-                          className="max-w-full rounded mb-1"
-                        />
-                      ) : (
-                        <video controls className="max-w-full rounded mb-1">
-                          <source src={msg.attachments} />
-                        </video>
-                      ))}
-
-                    {msg.message && (
-                      <div className="text-sm">{msg.message}</div>
-                    )}
-
-                    <div className="text-xs text-gray-400 mt-1">
-                      {new Date(
-                        msg.createdAt || Date.now()
-                      ).toLocaleTimeString()}
-                      {msg.fromSelf && (
-                        <span>
-                          {msg.seen ? (
-                            <span className="text-blue-500">✓✓</span>
-                          ) : (
-                            <span className="text-gray-500">✓</span>
+                          {msg.message && (
+                            <div className="text-sm">{msg.message}</div>
                           )}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </li>
-              ))}
-              <div ref={messagesEndRef} />
-            </ul>
-          </div>
+
+                          <div className="text-xs text-gray-400 mt-1">
+                            {new Date(
+                              msg.createdAt || Date.now()
+                            ).toLocaleTimeString()}
+                            {msg.fromSelf && (
+                              <span>
+                                {msg.seen ? (
+                                  <span className="text-blue-500">✓✓</span>
+                                ) : (
+                                  <span className="text-gray-500">✓</span>
+                                )}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </ul>
+                </div>
+              </>
+            )
+          }
 
           <TypingIndicator isTyping={typingStatus} />
           {/* Attachment preview */}
@@ -377,7 +390,7 @@ function Message() {
             <input
               type="text"
               placeholder="Type a message"
-              className="w-[30%] sm:flex-1 md:flex-1 lg:flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring"
+              className="w-[64%] sm:flex-1 md:flex-1 lg:flex-1 px-4 py-2 border rounded-full focus:outline-none focus:ring"
               value={input}
               onChange={handleInputChange}
             />
