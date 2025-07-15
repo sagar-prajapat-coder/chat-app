@@ -50,8 +50,12 @@ function Login() {
         email,
         password,
       });
+      const userData = {
+        name: res.data.data?.name, 
+        token: res.data.token,
+      };
       toast.success("Login successful!");
-      localStorage.setItem("user", JSON.stringify(res.data));
+      localStorage.setItem("user", JSON.stringify(userData));
       navigate("/dashboard");
     } catch (err) {
       toast.error("Invalid credentials");
