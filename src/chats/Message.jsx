@@ -55,6 +55,7 @@ function Message() {
               ? getAttachmentUrl(msg.attachments)
               : null,
         }));
+        console.log(fetchMessages,"feert")
         setMessages(normalized.length > 0 ? normalized : []);
         await markMessagesAsSeen();
       } catch (err) {
