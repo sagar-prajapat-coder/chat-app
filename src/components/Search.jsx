@@ -96,7 +96,7 @@ export const Search = ({ onSearch }) => {
         className="px-3 py-2 w-52 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
       />
       {showSuggestions && suggestions.length > 0 && (
-        <ul className="absolute z-10 bg-white border border-gray-300 w-52 mt-1 rounded shadow max-h-60 overflow-y-auto">
+        <ul className="pb-2 absolute z-10 bg-white border border-gray-300 w-52 mt-1 rounded shadow max-h-60 overflow-y-auto">
           {suggestions.map((s, idx) => {
             return (
               <div key={s._id || idx} className="flex items-center space-x-2">
