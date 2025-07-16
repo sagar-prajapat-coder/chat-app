@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { IoMdSend } from "react-icons/io";
 import { useState, useEffect, useRef } from "react";
 import Sidebar from "../layouts/Sidebar";
 import Api from "../config/Api";
@@ -395,11 +396,11 @@ function Message() {
               value={input}
               onChange={handleInputChange}
             />
-            <button
+             <button
               type="submit"
-              className="px-4 py-2 bg-green-500 text-white rounded-full"
+              className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 transition"
             >
-              Send
+              <IoMdSend size={20} />
             </button>
           </form>
         </main>
