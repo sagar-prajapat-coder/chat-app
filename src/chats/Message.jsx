@@ -7,6 +7,7 @@ import socket from "../config/Socket";
 import { TypingIndicator } from "../components/TypingIndicator";
 import { fistAndLastInitials, formatFileSize } from "../utils/helper.js";
 import { BarLoader, SyncLoader } from "react-spinners";
+import Webrtc from "../components/Webrtc.jsx";
 
 function Message() {
   const location = useLocation();
@@ -257,6 +258,7 @@ function Message() {
               {fistAndLastInitials(location.state.userName) || ""}
             </div>
 
+
             <div>
               <div className="font-semibold">{location.state.userName}</div>
               <div className="text-xs text-gray-500">
@@ -264,6 +266,7 @@ function Message() {
               </div>
             </div>
           </div>
+            <Webrtc  />
           {
             loading ? (
               <>

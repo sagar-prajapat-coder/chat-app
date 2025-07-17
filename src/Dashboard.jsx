@@ -25,6 +25,7 @@ function Dashboard() {
             {/* List items go here */}
           </ul>
         </div>
+      
       </main>
     </div>
   );
