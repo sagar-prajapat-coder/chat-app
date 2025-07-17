@@ -165,6 +165,7 @@ function Message() {
             : null,
       };
 
+      console.log(normalizedMessage);
       setMessages((prev) => [...prev, normalizedMessage]);
 
       // ✅ Emit normalized message, not raw
